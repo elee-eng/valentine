@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentine Questionnaire 💌</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+            background-color: #ffe4e6; /* Soft pink default */
+            color: #333;
+        }
+
+        /* Teeth / Bite Animation */
+        .bite-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9998;
+            display: none;
+        }
+        .jagged-top {
+            position: absolute;
+            top: -50vh;
+            left: 0;
+            width: 100%;
+            height: 50vh;
+            background: #d32f2f;
+            transition: top 0.1s ease-in;
+        }
+        .jagged-top::after {
+            content: '';
+            position: absolute;
+            bottom: -40px;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background: linear-gradient(45deg, white 15px, transparent 0) 0 0,
+                        linear-gradient(-45deg, white 15px, transparent 0) 0 0;
+            background-size: 30px 40px;
+            background-repeat: repeat-x;
+        }
+
+        .jagged-bottom {
+            position: absolute;
+            bottom: -50vh;
+            left: 0;
+            width: 100%;
+            height: 50vh;
+            background: #d32f2f;
+            transition: bottom 0.1s ease-in;
+        }
+        .jagged-bottom::after {
+            content: '';
+            position: absolute;
+            top: -40px;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background: linear-gradient(45deg, transparent 15px, white 0) 0 0,
+                        linear-gradient(-45deg, transparent 15px, white 0) 0 0;
+            background-size: 30px 40px;
+            background-repeat: repeat-x;
+        }
+
+        .biting .jagged-top { top: 0; }
+        .biting .jagged-bottom { bottom: 0; }
+        .red-flash {
+            animation: flashRed 0.3s;
+        }
+        @keyframes flashRed {
+            0%, 100% { background-color: transparent; }
+            50% { background-color: rgba(255, 0, 0, 0.4); }
+        }
+
+        /* Screen Sections */
+        .screen {
+            display: none;
+            min-height: 100vh;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        .active-screen {
+            display: flex;
+        }
+
+        /* Custom Button Styles */
+        .btn-primary {
+            background-color: #ec4899;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1.25rem;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
+            cursor: pointer;
+            border: 2px solid #be185d;
+        }
+        .btn-primary:active:not(:disabled) { transform: scale(0.95); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; background-color: #9ca3af; border-color: #6b7280; }
+
+        /* Builder Selection Styles */
+        .builder-btn {
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.2s;
+            background-color: white;
+            color: #374151;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        .builder-btn:hover:not(#btn-programmer) {
+            background-color: #fce7f3; /* Pinkish hover */
+            border-color: #f472b6;
+        }
+        .builder-btn.selected {
+            background-color: #fbcfe8;
+            border-color: #db2777;
+            color: #831843;
+        }
+
+        /* Lorax / Truffula Trees */
+        .tree-wrapper {
+            position: relative;
+            width: 100px;
+            height: 160px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .tree-wrapper:hover {
+            transform: scale(1.05);
+        }
+        .truffula-tuft {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ffb6c1, #ff1493);
+            margin-bottom: -15px;
+            position: relative;
+            z-index: 2;
+            box-shadow: inset -5px -10px 15px rgba(0,0,0,0.2);
+        }
+        .truffula-tuft.orange { background: radial-gradient(circle at 30% 30%, #ffdab9, #ff4500); }
+        .truffula-tuft.yellow { background: radial-gradient(circle at 30% 30%, #ffffe0, #ffd700); }
+        
+        .truffula-trunk {
+            width: 14px;
+            height: 90px;
+            background: repeating-linear-gradient(
+                -45deg,
+                #fcd34d,
+                #fcd34d 8px,
+                #4b5563 8px,
+                #4b5563 16px
+            );
+            border-radius: 4px;
+        }
+
+        .tree-anim-run {
+            animation: treeRun 2.5s forwards ease-in;
+        }
+        @keyframes treeRun {
+            0% { transform: translateX(0); }
+            10% { transform: translateX(-15px) rotate(-10deg); }
+            100% { transform: translateX(200vw) rotate(15deg); }
+        }
+
+        /* Popups */
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            80% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        .animate-pop {
+            animation: popIn 0.3s ease-out forwards;
+        }
+
+        /* Pizzazz Shaker */
+        #shaker-icon {
+            position: fixed;
+            pointer-events: none;
+            font-size: 2.5rem;
+            z-index: 50;
+            display: none;
+            transition: transform 0.1s ease-out;
+        }
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            animation: fall 1s linear forwards;
+            z-index: 40;
+            font-size: 1.5rem;
+        }
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100px) rotate(180deg); opacity: 0; }
+        }
+
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- BULLY BITE POPUP -->
+    <div id="bully-popup" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-red-600 text-white p-8 rounded-3xl shadow-[0_0_50px_rgba(255,0,0,0.7)] z-[10000] hidden flex-col items-center text-center w-11/12 max-w-md border-8 border-black">
+        <span class="text-7xl mb-4 animate-bounce">🦷💥</span>
+        <h2 class="text-4xl font-black uppercase tracking-wider mb-2">WRONG!</h2>
+        <p class="text-2xl font-bold">The bully got another chomp at you! 🤕</p>
+    </div>
+
+    <!-- WORK TRICK POPUP -->
+    <div id="work-popup" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-pink-500 text-white p-8 rounded-3xl shadow-xl z-[10000] hidden flex-col items-center text-center w-11/12 max-w-md border-4 border-white">
+        <span class="text-6xl mb-4">💅✨</span>
+        <p class="text-3xl font-bold">Wouldn't you want to know.</p>
+    </div>
+
+    <!-- INTRO MODAL -->
+    <div id="intro-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-80">
+        <div class="bg-white p-8 rounded-2xl max-w-md w-11/12 shadow-2xl border-4 border-pink-400">
+            <h2 class="text-3xl font-black mb-4 text-pink-600">Wait a second... 🛑</h2>
+            <p class="mb-6 text-gray-700 text-lg font-bold">
+                You really shouldn't click on random links. Security 101. 🤦‍♀️
+                <br><br>
+                Anyways, glad you're here! 😉✨
+            </p>
+            <div class="flex justify-end">
+                <button onclick="startCaptcha()" class="btn-primary hover:scale-105">
+                    Proceed ➡️
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PHASE 1: GHOST CAPTCHA -->
+    <div id="screen-captcha" class="screen bg-pink-50 relative">
+        <div class="max-w-md w-full bg-white p-6 border-4 border-pink-200 rounded-2xl shadow-xl">
+            <div class="bg-pink-500 text-white p-4 rounded-xl mb-4 shadow-inner">
+                <p class="font-black text-xl">Verify you are human 🤖</p>
+                <p class="text-md font-bold mt-1">Select all squares containing a photo of us.</p>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-2 mb-4" id="captcha-grid">
+                <!-- 9 grid items injected by JS -->
+            </div>
+
+            <div class="min-h-[50px] flex justify-between items-center mt-6">
+                <p id="captcha-msg" class="text-pink-600 text-lg font-bold opacity-0 transition-opacity duration-500">Okay, we really need to take some pictures... 📸🙄</p>
+                <button id="btn-captcha-next" onclick="showScreen('screen-ask')" class="btn-primary hidden px-8">Next ✨</button>
+            </div>
+        </div>
+        
+        <!-- Tooltip -->
+        <div id="captcha-tooltip" class="absolute bg-gray-800 text-white text-sm font-bold px-3 py-1 rounded-lg hidden pointer-events-none z-50 shadow-lg">
+            File_Not_Found ❌
+        </div>
+    </div>
+
+    <!-- PHASE 2: THE ASK -->
+    <div id="screen-ask" class="screen bg-pink-100 relative">
+        <h1 class="text-5xl md:text-7xl font-black text-pink-600 mb-12 drop-shadow-sm animate-bounce">
+            Will you be my Valentine? 💌🌹
+        </h1>
+        <div class="flex gap-6 items-center justify-center relative w-full h-40 max-w-md">
+            <!-- YES BUTTON -->
+            <button onclick="handleYes()" class="btn-primary z-10 w-40 h-20 text-3xl shadow-[0_0_20px_rgba(236,72,153,0.5)]">
+                YES! ❤️
+            </button>
+            
+            <!-- NO BUTTON -->
+            <button id="btn-no" class="bg-gray-300 text-gray-600 w-32 h-16 rounded-xl text-xl font-bold z-20 flex items-center justify-center transition-all duration-75 border-b-4 border-gray-400">
+                NO 🙅‍♀️
+            </button>
+        </div>
+        <p class="mt-8 text-pink-500 font-bold opacity-75 text-lg">(Try clicking no... I dare you 😈)</p>
+    </div>
+
+    <!-- PHASE 3: SKEPTICISM -->
+    <div id="screen-skeptic" class="screen bg-purple-100">
+        <div class="max-w-xl p-8 bg-white rounded-3xl shadow-xl border-4 border-purple-300">
+            <h2 class="text-4xl text-purple-700 mb-6 font-black">Hmmmm... 🤔🤨</h2>
+            <p class="text-xl mb-6 text-gray-700 font-bold leading-relaxed">
+                Interesting proposal. But I can't just let <i>anyone</i> be my Valentine. 💅
+                <br><br>
+                I need to make sure you're actually worth it.
+            </p>
+            <button onclick="startTrivia()" class="btn-primary bg-purple-600 border-purple-800 text-xl px-8 py-4 mt-4 shadow-lg">
+                Prove It 🚀
+            </button>
+        </div>
+    </div>
+
+    <!-- PHASE 4: TRIVIA -->
+    <div id="screen-trivia" class="screen bg-yellow-50">
+        <!-- Bite Overlay -->
+        <div id="bite-effect" class="bite-overlay">
+            <div class="jagged-top"></div>
+            <div class="jagged-bottom"></div>
+        </div>
+
+        <div class="max-w-2xl w-full bg-white p-8 rounded-3xl shadow-xl border-4 border-yellow-300 relative">
+            <!-- Dev Skip on Header -->
+            <div class="mb-4 text-left border-b-2 border-yellow-100 pb-4">
+                <h2 class="text-lg text-yellow-600 font-bold cursor-pointer select-none uppercase tracking-wider" ondblclick="skipTrivia()">Security Question <span id="q-num">1</span> of <span id="q-total">9</span> 🔐</h2>
+                <h3 id="q-header" class="text-3xl md:text-4xl font-black text-pink-500 mt-2 drop-shadow-sm">Header Loading...</h3>
+            </div>
+            
+            <div class="h-4 bg-gray-100 rounded-full mb-8 shadow-inner overflow-hidden">
+                <div id="progress-bar" class="h-full bg-yellow-400 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            
+            <p id="question-text" class="text-2xl font-bold mb-8 min-h-[80px] flex items-center text-gray-800 leading-relaxed">
+                Loading...
+            </p>
+
+            <div id="answers-grid" class="grid grid-cols-1 gap-4 w-full">
+                <!-- Answers injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- PHASE 5: DATE BUILDER -->
+    <div id="screen-builder" class="screen bg-blue-50">
+        <div class="max-w-3xl w-full bg-white p-8 rounded-3xl shadow-xl border-4 border-blue-300 relative overflow-hidden">
+            <h2 class="text-4xl text-blue-700 mb-8 font-black">Build Your Date 🛠️💖</h2>
+            
+            <!-- Step 1: Height -->
+            <div id="build-step-1" class="build-step">
+                <h3 class="text-xl mb-4 font-black text-gray-500 uppercase tracking-widest">Parameter 1: Height Specification 📏</h3>
+                <div class="flex flex-col items-center gap-4 mb-8 bg-blue-50 p-6 rounded-2xl border-2 border-blue-100">
+                    <div class="text-6xl mb-2" id="height-emoji">🧍‍♂️</div>
+                    <!-- Range from 60 inches (5'0") to 84 inches (7'0") -->
+                    <input type="range" id="height-slider" min="60" max="84" step="1" value="65" class="w-full max-w-md h-3 bg-blue-200 rounded-lg appearance-none cursor-pointer mt-4">
+                    <div class="text-5xl font-black text-blue-900 mt-4 drop-shadow-sm"><span id="height-val">5'5"</span></div>
+                    <p id="height-msg" class="text-red-500 font-bold min-h-[30px] text-xl mt-2">Eww, short king 🤏. Try again.</p>
+                </div>
+                <button id="btn-height-next" onclick="checkHeight()" class="btn-primary bg-blue-500 border-blue-700 w-full max-w-md mt-4 text-xl py-4" disabled>Next Parameter ➡️</button>
+            </div>
+
+            <!-- Step 2: Occupation -->
+            <div id="build-step-2" class="build-step hidden flex flex-col items-center">
+                <h3 class="text-xl mb-6 font-black text-gray-500 uppercase tracking-widest w-full text-center">Parameter 2: Occupation 💼</h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 relative w-full max-w-2xl">
+                    <button id="job-Teacher" onclick="selectJob('Teacher')" onmouseenter="hoverJobError('Teacher')" onmouseleave="clearJobError()" class="builder-btn job-btn">Teacher 🍎</button>
+                    <button id="job-Doctor" onclick="selectJob('Doctor')" onmouseenter="hoverJobError('Doctor')" onmouseleave="clearJobError()" class="builder-btn job-btn">Doctor 🩺</button>
+                    <button id="job-Accountant" onclick="selectJob('Accountant')" onmouseenter="hoverJobError('Accountant')" onmouseleave="clearJobError()" class="builder-btn job-btn">Accountant 📊</button>
+                    <button id="job-Lawyer" onclick="selectJob('Lawyer')" onmouseenter="hoverJobError('Lawyer')" onmouseleave="clearJobError()" class="builder-btn job-btn">Lawyer ⚖️</button>
+                    <button id="job-Engineer" onclick="selectJob('Engineer')" onmouseenter="clearJobError()" class="builder-btn job-btn text-blue-700">Engineer ⚙️</button>
+                    
+                    <!-- The Runner -->
+                    <button id="btn-programmer" onclick="selectJob('Programmer')" class="builder-btn job-btn font-mono bg-gray-800 text-green-400 border-gray-900 absolute z-50 shadow-lg">Programmer 💻</button>
+                </div>
+                <div id="job-error" class="text-red-500 font-bold text-lg min-h-[40px] mb-4 text-center max-w-md"></div>
+                <button onclick="submitJob()" class="btn-primary bg-blue-500 border-blue-700 w-full max-w-md text-xl py-4">Next Parameter ➡️</button>
+            </div>
+
+            <!-- Step 3: Hobbies -->
+            <div id="build-step-3" class="build-step hidden flex flex-col items-center">
+                <h3 class="text-xl mb-6 font-black text-gray-500 uppercase tracking-widest w-full text-center">Parameter 3: Hobbies 🎯</h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 w-full max-w-md md:max-w-2xl">
+                    <button id="hobby-Golf" onclick="selectHobby('Golf')" onmouseenter="hoverHobbyError('Golf')" onmouseleave="clearHobbyError()" class="builder-btn hobby-btn">Golf ⛳</button>
+                    <button id="hobby-Gaming" onclick="selectHobby('Gaming')" onmouseenter="hoverHobbyError('Gaming')" onmouseleave="clearHobbyError()" class="builder-btn hobby-btn">Video Games 🎮</button>
+                    <button id="hobby-Dirtbiking" onclick="selectHobby('Dirtbiking')" onmouseenter="clearHobbyError()" class="builder-btn hobby-btn text-green-700">Dirtbiking 🏍️</button>
+                    <button id="hobby-Reading" onclick="selectHobby('Reading')" onmouseenter="hoverHobbyError('Reading')" onmouseleave="clearHobbyError()" class="builder-btn hobby-btn">Reading 📚</button>
+                    <button id="hobby-Pickleball" onclick="selectHobby('Pickleball')" onmouseenter="hoverHobbyError('Pickleball')" onmouseleave="clearHobbyError()" class="builder-btn hobby-btn">Pickleball 🏓</button>
+                    <button id="hobby-CrossFit" onclick="selectHobby('CrossFit')" onmouseenter="hoverHobbyError('CrossFit')" onmouseleave="clearHobbyError()" class="builder-btn hobby-btn">CrossFit 🏋️‍♂️</button>
+                </div>
+                <div id="hobby-error" class="text-red-500 font-bold text-lg min-h-[40px] mb-4 text-center"></div>
+                <button onclick="submitHobby()" class="btn-primary bg-blue-500 border-blue-700 w-full max-w-md text-xl py-4">Proceed ✅</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PHASE 6: THE CONTRACT -->
+    <div id="screen-contract" class="screen bg-pink-50 relative">
+        <div class="max-w-2xl w-full bg-white p-10 border-4 border-pink-300 rounded-3xl shadow-2xl text-left relative overflow-hidden">
+            <!-- Decorative corner elements -->
+            <div class="absolute -top-6 -right-6 text-6xl opacity-20 transform rotate-12">📜</div>
+            
+            <h2 class="text-3xl md:text-4xl font-black mb-6 border-b-4 border-pink-200 pb-4 text-pink-600">
+                VALENTINE SERVICE LEVEL AGREEMENT & BINDING CONTRACT 📜💖
+            </h2>
+            
+            <div class="space-y-4 mb-8 text-gray-800 font-medium leading-relaxed bg-pink-50/50 p-6 rounded-xl border border-pink-100">
+                <p>
+                    This binding agreement is entered into by and between the undeniably handsome Engineer (hereinafter referred to as "The Catch") and the undersigned (hereinafter referred to as "The Lucky Valentine").
+                </p>
+                
+                <h3 class="font-black text-pink-700 mt-4">ARTICLE I: ATTENDANCE & PUNCTUALITY</h3>
+                <p>
+                    The Lucky Valentine agrees to be completely ready, looking absolutely stunning, by exactly <strong class="text-black bg-yellow-200 px-1">9:30 AM</strong> on February 14th. Tardiness will be strictly penalized with extra kisses and/or relentless teasing. 🕰️💋
+                </p>
+
+                <h3 class="font-black text-pink-700 mt-4">ARTICLE II: TECHNICAL SUPREMACY</h3>
+                <p>
+                    The Lucky Valentine legally acknowledges that The Catch is technically correct 99.9% of the time. Any disputes will be settled by AI, and if AI disagrees with The Catch, AI is deemed factually inaccurate. ⚙️🤓
+                </p>
+
+                <h3 class="font-black text-pink-700 mt-4">ARTICLE III: SUNDAY PROTOCOLS</h3>
+                <p>
+                    It is understood, accepted, and legally binding that the dirtbike takes absolute priority on Sundays. No further questions will be taken at this time. 🏍️💨
+                </p>
+
+                <h3 class="font-black text-pink-700 mt-4">ARTICLE V: DECISION FATIGUE MITIGATION</h3>
+                <p>
+                    The Lucky Valentine hereby legally revokes her right to make any decisions on said date after The Catch had to veto her disasterly decision to stay in last Saturday night 🤦‍♂️.
+                </p>
+
+                <h3 class="font-black text-pink-700 mt-4">ARTICLE VI: CINEMATIC CONTENT STANDARDS</h3>
+                <p>
+                    The Lucky Valentine is granted the right to pick the movie; however, the use of Potato Peelers or forks as primary plot devices is strictly prohibited. Any movie selection that causes "permanent mental scarring" will result in a mandatory rewatch of The Princess Bride. 🎬🍿
+                </p>
+
+                <h3 class="font-black text-pink-700 mt-4">ARTICLE VII: THE FLOWER FIASCO PARDON</h3>
+                <p>
+                    The Catch will no longer feel guilty because he didn't check that the order went through for the flowers that were supposed to be delivered on Wednesday 🤦‍♂️. And instead, he had to code up this entire website. 💻🌸
+                </p>
+
+                <p class="mt-6 font-bold italic text-pink-600">
+                    By signing below, you waive your right to back out and agree to an all-day date of unparalleled romance, medium-to-high levels of sarcasm, and undeniable chemistry. 🧪✨
+                </p>
+            </div>
+
+            <div class="flex items-end gap-4 mb-8">
+                <span class="text-2xl font-black">X</span>
+                <input type="text" id="contract-name" class="border-b-4 border-gray-400 outline-none px-2 py-1 w-full max-w-xs font-black text-2xl focus:border-pink-500 transition-colors bg-transparent placeholder-gray-300" placeholder="Print Name Here">
+            </div>
+
+            <div class="w-full flex justify-end">
+                <button id="btn-accept-contract" onclick="acceptContract()" class="btn-primary text-xl px-10 py-4 opacity-50 pointer-events-none transition-opacity duration-300" disabled>
+                    Accept & Sign ✍️
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PHASE 7: TREE CHOPPING -->
+    <div id="screen-trees" class="screen bg-green-50 relative overflow-hidden">
+        <div class="max-w-4xl w-full text-center">
+            <h2 class="text-4xl text-green-800 mb-4 font-black drop-shadow-sm">Well, while you are here... 🛠️</h2>
+            <p class="text-2xl mb-12 text-gray-700 font-bold">You can help me deal with this issue.<br>Click to chop down these Lorax trees! 🪓🌳</p>
+            
+            <div class="flex justify-center items-end gap-6 flex-wrap mt-10 h-48 px-4" id="forest-container">
+                <!-- Trees injected via JS -->
+            </div>
+            
+            <p id="tree-msg" class="text-3xl font-black text-pink-500 mt-16 min-h-[40px] animate-pulse"></p>
+        </div>
+    </div>
+
+    <!-- PHASE 8: PIZZAZZ SHAKER -->
+    <div id="screen-pizzazz" class="screen bg-pink-100 relative overflow-hidden cursor-none">
+        <div class="max-w-lg w-full text-center z-10 relative pointer-events-none bg-white/50 p-10 rounded-3xl backdrop-blur-sm border-4 border-pink-200">
+            <h2 class="text-5xl font-black mb-4 text-pink-600">Get Ready ✨</h2>
+            <p class="text-gray-700 font-bold text-2xl mb-12">Rapidly shake your mouse to apply Pizzazz.</p>
+            
+            <div class="flex justify-center items-center h-48">
+                <span id="pizzazz-girl" class="text-7xl transition-all duration-300 transform drop-shadow-xl">🧍‍♀️</span>
+            </div>
+            
+            <div class="w-full bg-gray-300 rounded-full h-6 mt-12 mb-4 border-2 border-white shadow-inner">
+                <div id="pizzazz-bar" class="bg-gradient-to-r from-pink-400 to-purple-500 h-full rounded-full transition-all duration-75" style="width: 0%"></div>
+            </div>
+            <p id="pizzazz-msg" class="text-pink-600 font-black text-2xl min-h-[40px] drop-shadow-sm"></p>
+        </div>
+        <!-- Shaker Icon that follows cursor -->
+        <span id="shaker-icon">🧂✨</span>
+    </div>
+
+    <!-- PHASE 9: SUCCESS -->
+    <div id="screen-success" class="screen bg-red-100 relative overflow-hidden">
+        <!-- Confetti Background (CSS only approximation) -->
+        <div class="absolute inset-0 pointer-events-none opacity-20 text-4xl overflow-hidden whitespace-wrap flex flex-wrap content-start z-0">
+            ❤️ 💖 💕 🏎️ ✨ 🌹 💌 ❤️ 💖 💕 🏎️ ✨ 🌹 💌 ❤️ 💖 💕 🏎️ ✨ 🌹 💌 ❤️ 💖 💕 🏎️ ✨ 🌹 💌
+            ❤️ 💖 💕 🏎️ ✨ 🌹 💌 ❤️ 💖 💕 🏎️ ✨ 🌹 💌 ❤️ 💖 💕 🏎️ ✨ 🌹 💌 ❤️ 💖 💕 🏎️ ✨ 🌹 💌
+        </div>
+
+        <div class="text-center mb-8 z-10">
+            <span class="text-8xl drop-shadow-xl animate-bounce">🏎️💨</span>
+        </div>
+        <h1 class="text-5xl md:text-7xl font-black text-red-600 mb-6 drop-shadow-sm z-10">
+            Date Confirmed! 🎉
+        </h1>
+        <div class="bg-white p-10 rounded-3xl shadow-2xl border-8 border-red-300 max-w-xl w-full text-left z-10 relative">
+            <p class="text-2xl mb-6 text-gray-700 font-bold leading-relaxed">
+                You have successfully navigated the protocols, survived the bites, built the correct 6'2" engineer, signed the legally binding SLA, cleared the forest, and achieved maximum pizzazz. 💅✨
+            </p>
+            <div class="bg-red-50 p-6 rounded-2xl border-4 border-dashed border-red-200 text-center">
+                <p class="font-black text-red-400 uppercase tracking-widest mb-2">Official Pickup Time 🕰️</p>
+                <p class="text-6xl font-black text-gray-900 my-2 drop-shadow-md" id="pickup-time">9:30 AM</p>
+                <p class="text-red-500 font-bold mt-2 text-lg">Don't be late. I have the contract. 📜</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIC -->
+    <script>
+        // --- DATA & STATE ---
+        const triviaQuestions = [
+            {
+                header: "Geography 101 🗺️",
+                type: 'mc',
+                q: "What is my hometown? 🏡",
+                correct: "Davis",
+                options: ["Sacramento", "Davis", "Dixon", "Vacaville"]
+            },
+            {
+                header: "Spotted in the Wild 🕵️‍♂️",
+                type: 'text',
+                q: "What unusual character was spotted in the Albuquerque DMV?",
+                correct: "Pimp"
+            },
+            {
+                header: "The 'Do you even listen to me?' Test 💼",
+                type: 'trick',
+                q: "What do I do for work? 🤔",
+                correct: "Anything" // Handled uniquely in logic
+            },
+            {
+                header: "Memory Lane 🍔",
+                type: 'text',
+                q: "What was the name of the restaurant we went to for our second date?",
+                correct: "High Noon Saloon"
+            },
+            {
+                header: "Laughing Matters 🎤",
+                type: 'text',
+                q: "What is the name of the comedian we saw at the comedy club? 🤣",
+                correct: "Jeff Dye"
+            },
+            {
+                header: "Classified Intel 🕵️‍♀️",
+                type: 'text',
+                q: "What is your secret spy name? 🤫",
+                correct: "Scarlet"
+            },
+            {
+                header: "The Intangibles ✨",
+                type: 'text',
+                q: "On our third date, you brought something very specific with you that wasn't a physical object. What was it? 💅",
+                correct: "Pizzazz"
+            },
+            {
+                header: "Survival Skills 🔪",
+                type: 'text',
+                q: "Which common household tool became a terrifying movie weapon? 🎬",
+                correct: "Potato peeler"
+            },
+            {
+                header: "Nerd Check 🚀",
+                type: 'text',
+                q: "What is the farthest point in an orbit called? 🪐<br><br><span class='text-sm text-gray-500 font-normal'>(Look it up if you have to...)</span>",
+                correct: "Apogee"
+            },
+            {
+                header: "Clinical Diagnostics 🩺",
+                type: 'text',
+                q: "On our first date, things didn't go as planned because we couldn't get in here. To find the name, you have to use your clinical knowledge.<br><br>Combine the first word of your future job with another word as a hint. This will give you the category of the location. From there, identify the specific name of the establishment in the alley.<br><br>What is the name of the place? 🚪🍸",
+                correct: "Teddy Roe's"
+            }
+        ];
+
+        let currentQIndex = 0;
+        let selectedJobValue = null;
+        let selectedHobbyValue = null;
+        let activeScreenId = 'intro-modal';
+
+        // --- GLOBAL UTILS ---
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+            document.getElementById('intro-modal').style.display = 'none';
+            if(document.getElementById(id)) {
+                document.getElementById(id).classList.add('active-screen');
+                activeScreenId = id;
+            }
+        }
+
+        // --- PHASE 1: GHOST CAPTCHA ---
+        function startCaptcha() {
+            showScreen('screen-captcha');
+            
+            const grid = document.getElementById('captcha-grid');
+            grid.innerHTML = '';
+            
+            // Create 9 broken image blocks
+            for(let i=0; i<9; i++) {
+                let box = document.createElement('div');
+                box.className = "bg-gray-100 h-28 rounded-xl flex items-center justify-center border-2 border-dashed border-gray-300 cursor-pointer hover:bg-pink-100 transition-colors relative shadow-sm";
+                box.innerHTML = "<span class='text-4xl opacity-50'>🖼️❌</span>";
+                
+                box.onmousemove = (e) => {
+                    const tooltip = document.getElementById('captcha-tooltip');
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = (e.pageX + 15) + 'px';
+                    tooltip.style.top = (e.pageY + 15) + 'px';
+                };
+                box.onmouseleave = () => {
+                    document.getElementById('captcha-tooltip').style.display = 'none';
+                };
+                
+                grid.appendChild(box);
+            }
+
+            // 5 second delay before next button appears (changed from 15s)
+            setTimeout(() => {
+                document.getElementById('captcha-msg').classList.remove('opacity-0');
+                document.getElementById('btn-captcha-next').classList.remove('hidden');
+            }, 6000); // Wait 6 seconds just to be slightly annoying but not painful
+        }
+
+        // --- PHASE 2: THE ASK (Runaway No) ---
+        function handleYes() {
+            showScreen('screen-skeptic');
+        }
+
+        const btnNo = document.getElementById('btn-no');
+        const screenAsk = document.getElementById('screen-ask');
+
+        document.addEventListener('mousemove', (e) => {
+            if (activeScreenId === 'screen-ask') {
+                const rect = btnNo.getBoundingClientRect();
+                const btnCenterX = rect.left + rect.width / 2;
+                const btnCenterY = rect.top + rect.height / 2;
+                const dist = Math.sqrt(Math.pow(e.clientX - btnCenterX, 2) + Math.pow(e.clientY - btnCenterY, 2));
+                
+                if (dist < 200) {
+                    const maxX = window.innerWidth - rect.width - 20;
+                    const maxY = window.innerHeight - rect.height - 20;
+                    btnNo.style.position = 'fixed';
+                    btnNo.style.left = Math.max(20, Math.random() * maxX) + 'px';
+                    btnNo.style.top = Math.max(20, Math.random() * maxY) + 'px';
+                }
+            }
+        });
+
+        // --- PHASE 4: TRIVIA ---
+        function startTrivia() {
+            showScreen('screen-trivia');
+            document.getElementById('q-total').innerText = triviaQuestions.length;
+            loadQuestion();
+        }
+
+        function skipTrivia() {
+            // Dev skip attached to double clicking the header
+            currentQIndex = triviaQuestions.length;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentQIndex >= triviaQuestions.length) {
+                showScreen('screen-builder');
+                setupProgrammerPosition();
+                return;
+            }
+
+            const q = triviaQuestions[currentQIndex];
+            document.getElementById('q-num').innerText = currentQIndex + 1;
+            document.getElementById('q-header').innerText = q.header;
+            document.getElementById('question-text').innerHTML = q.q;
+            
+            const pct = (currentQIndex / triviaQuestions.length) * 100;
+            document.getElementById('progress-bar').style.width = pct + '%';
+
+            const grid = document.getElementById('answers-grid');
+            grid.innerHTML = '';
+
+            if (q.type === 'mc') {
+                const options = [...q.options];
+                options.sort(() => Math.random() - 0.5);
+
+                options.forEach(ans => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full p-5 text-left border-4 border-gray-100 rounded-2xl hover:bg-yellow-100 hover:border-yellow-400 transition-colors font-bold text-xl bg-white shadow-sm";
+                    btn.innerText = ans;
+                    btn.onclick = () => handleAnswer(ans === q.correct);
+                    grid.appendChild(btn);
+                });
+            } else if (q.type === 'text' || q.type === 'trick') {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = 'trivia-text-input';
+                input.className = "w-full p-5 border-4 border-gray-200 rounded-2xl text-xl outline-none focus:border-pink-400 mb-4 font-sans shadow-inner";
+                input.placeholder = "Type answer here... ✍️";
+                
+                input.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') submitTextAnswer();
+                });
+
+                const submitBtn = document.createElement('button');
+                submitBtn.innerText = "Submit Answer 📤";
+                submitBtn.className = "btn-primary w-full py-4 text-xl";
+                submitBtn.onclick = submitTextAnswer;
+
+                grid.appendChild(input);
+                grid.appendChild(submitBtn);
+                setTimeout(() => input.focus(), 100);
+            }
+        }
+
+        function submitTextAnswer() {
+            const inputVal = document.getElementById('trivia-text-input').value;
+            const q = triviaQuestions[currentQIndex];
+            
+            if (q.type === 'trick') {
+                if(!inputVal.trim()) return; // don't accept empty
+                handleTrickQuestion();
+                return;
+            }
+
+            const isCorrect = checkTextAnswer(inputVal, q.correct);
+            handleAnswer(isCorrect);
+        }
+
+        function handleTrickQuestion() {
+            const popup = document.getElementById('work-popup');
+            popup.classList.remove('hidden');
+            popup.classList.add('flex', 'animate-pop');
+            
+            setTimeout(() => {
+                popup.classList.add('hidden');
+                popup.classList.remove('flex', 'animate-pop');
+                currentQIndex++;
+                loadQuestion();
+            }, 2500);
+        }
+
+        function checkTextAnswer(input, correct) {
+            if (!input) return false;
+            
+            const normalizedInput = input.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+            const normalizedCorrect = correct.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+
+            if (normalizedCorrect.includes('high noon') && normalizedInput.includes('high noon')) return true;
+            if (normalizedCorrect.includes('jeff dye') && (normalizedInput.includes('jeff dye') || normalizedInput.includes('jeff'))) return true;
+            if (normalizedCorrect.includes('scarlet') && normalizedInput.includes('scarlet')) return true;
+            if (normalizedCorrect.includes('pizzazz') && normalizedInput.includes('piz')) return true;
+            if (normalizedCorrect.includes('potato peeler') && (normalizedInput.includes('peeler') || normalizedInput.includes('potato'))) return true;
+            if (normalizedCorrect.includes('apogee') && normalizedInput.includes('apogee')) return true;
+            if (normalizedCorrect.includes('teddy roes') && (normalizedInput.includes('teddy') && normalizedInput.includes('roe'))) return true;
+            if (normalizedCorrect.includes('pimp') && normalizedInput.includes('pimp')) return true;
+
+            return normalizedInput === normalizedCorrect;
+        }
+
+        function handleAnswer(isCorrect) {
+            if (isCorrect) {
+                currentQIndex++;
+                loadQuestion();
+            } else {
+                triggerBite();
+            }
+        }
+
+        function triggerBite() {
+            const overlay = document.getElementById('bite-effect');
+            const popup = document.getElementById('bully-popup');
+            
+            overlay.style.display = 'block';
+            overlay.classList.add('biting');
+            document.body.classList.add('red-flash');
+            
+            popup.classList.remove('hidden');
+            popup.classList.add('flex', 'animate-pop');
+            
+            setTimeout(() => {
+                overlay.classList.remove('biting');
+                document.body.classList.remove('red-flash');
+                
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    popup.classList.add('hidden');
+                    popup.classList.remove('flex', 'animate-pop');
+                }, 800); 
+            }, 1000); 
+        }
+
+        // --- PHASE 5: BUILDER ---
+
+        // Step 1: Height
+        const slider = document.getElementById('height-slider');
+        const heightVal = document.getElementById('height-val');
+        const heightMsg = document.getElementById('height-msg');
+        const btnHeightNext = document.getElementById('btn-height-next');
+        const heightEmoji = document.getElementById('height-emoji');
+
+        slider.oninput = function() {
+            const totalInches = parseInt(this.value);
+            const ft = Math.floor(totalInches / 12);
+            const inchesRemaining = totalInches % 12;
+            
+            heightVal.innerText = `${ft}'${inchesRemaining}"`;
+            
+            if (totalInches < 74) {
+                heightMsg.innerText = "Eww, short king 🤏. Try again.";
+                heightMsg.className = "text-red-500 font-bold min-h-[30px] text-xl mt-2";
+                heightEmoji.innerText = "🧍‍♂️";
+                btnHeightNext.disabled = true;
+            } else if (totalInches > 74) {
+                heightMsg.innerText = "Stop being greedy 🛑.";
+                heightMsg.className = "text-red-500 font-bold min-h-[30px] text-xl mt-2";
+                heightEmoji.innerText = "🦒";
+                btnHeightNext.disabled = true;
+            } else {
+                heightMsg.innerText = "Perfect height acquired 🤌✨";
+                heightMsg.className = "text-green-600 font-black min-h-[30px] text-2xl mt-2 animate-pulse";
+                heightEmoji.innerText = "👑";
+                btnHeightNext.disabled = false;
+            }
+        }
+
+        function checkHeight() {
+            document.getElementById('build-step-1').classList.add('hidden');
+            document.getElementById('build-step-2').classList.remove('hidden');
+            setTimeout(setupProgrammerPosition, 50);
+        }
+
+        // Step 2: Job
+        function setupProgrammerPosition() {
+            const btnProg = document.getElementById('btn-programmer');
+            btnProg.style.position = 'relative';
+            btnProg.style.left = '0';
+            btnProg.style.top = '0';
+            btnProg.style.width = '100%';
+            btnProg.addEventListener('mouseover', runAwayProgrammer);
+        }
+
+        function runAwayProgrammer(e) {
+            e.preventDefault();
+            const btnProg = document.getElementById('btn-programmer');
+            const error = document.getElementById('job-error');
+            
+            error.innerText = "ahhhh women are scarey🏃‍♂️💨";
+            
+            if (btnProg.style.position !== 'fixed') {
+                const rect = btnProg.getBoundingClientRect();
+                btnProg.style.position = 'fixed';
+                btnProg.style.width = rect.width + 'px'; 
+            }
+            
+            const maxX = window.innerWidth - btnProg.offsetWidth - 20;
+            const maxY = window.innerHeight - btnProg.offsetHeight - 20;
+            btnProg.style.left = Math.max(20, Math.random() * maxX) + 'px';
+            btnProg.style.top = Math.max(20, Math.random() * maxY) + 'px';
+        }
+
+        function hoverJobError(job) {
+            const msgs = {
+                'Teacher': "A teacher would just give you extra homework.",
+                'Doctor': "A doctor is never home and has a massive God complex.",
+                'Accountant': "An accountant is too boring and dreams entirely in spreadsheets.",
+                'Lawyer': "A lawyer would literally just argue with you for fun."
+            };
+            let errorText = msgs[job] || `Umm... a ${job} is not it.`;
+            document.getElementById('job-error').innerText = errorText + " Also, they couldn't program you this website. 📉";
+        }
+
+        function clearJobError() {
+            document.getElementById('job-error').innerText = "";
+        }
+
+        function selectJob(job) {
+            if(job === 'Programmer') return; 
+            document.querySelectorAll('.job-btn').forEach(btn => btn.classList.remove('selected'));
+            document.getElementById(`job-${job}`)?.classList.add('selected');
+            selectedJobValue = job;
+            clearJobError();
+        }
+
+        function submitJob() {
+            const errorDiv = document.getElementById('job-error');
+
+            if (!selectedJobValue) {
+                errorDiv.innerText = "Please select an occupation ⚠️";
+                return;
+            }
+
+            if (selectedJobValue === 'Engineer') {
+                document.getElementById('btn-programmer').style.display = 'none'; 
+                document.getElementById('build-step-2').classList.add('hidden');
+                document.getElementById('build-step-3').classList.remove('hidden');
+            } else {
+                triggerBite();
+                errorDiv.innerText = `Incorrect parameter selected. Try again. 🚫`;
+                selectedJobValue = null;
+                document.querySelectorAll('.job-btn').forEach(btn => btn.classList.remove('selected'));
+            }
+        }
+
+        // Step 3: Hobby
+        function hoverHobbyError(hobby) {
+            const errorDiv = document.getElementById('hobby-error');
+            const msgs = {
+                'Golf': "Too boring. Next. 😴",
+                'Gaming': "You really want me yelling at a screen? 🎧😡",
+                'Reading': "Nerd. 🤓",
+                'Pickleball': "It's literally just giant ping pong for people with bad knees. 🏓👴",
+                'CrossFit': "I will never stop talking about CrossFit. Do not pick this. 🏋️‍♂️🗣️"
+            };
+            if(msgs[hobby]) errorDiv.innerText = msgs[hobby];
+        }
+
+        function clearHobbyError() {
+            document.getElementById('hobby-error').innerText = "";
+        }
+
+        function selectHobby(hobby) {
+            document.querySelectorAll('.hobby-btn').forEach(btn => btn.classList.remove('selected'));
+            document.getElementById(`hobby-${hobby}`)?.classList.add('selected');
+            selectedHobbyValue = hobby;
+            clearHobbyError();
+        }
+
+        function submitHobby() {
+            const errorDiv = document.getElementById('hobby-error');
+            
+            if (!selectedHobbyValue) {
+                errorDiv.innerText = "Please select a hobby ⚠️";
+                return;
+            }
+
+            if (selectedHobbyValue === 'Dirtbiking') {
+                showScreen('screen-contract'); 
+            } else {
+                triggerBite();
+                errorDiv.innerText = "Gross. Try again. 👎";
+                selectedHobbyValue = null;
+                document.querySelectorAll('.hobby-btn').forEach(btn => btn.classList.remove('selected'));
+            }
+        }
+
+        // --- PHASE 6: CONTRACT ---
+        const contractName = document.getElementById('contract-name');
+        const btnAccept = document.getElementById('btn-accept-contract');
+
+        contractName.addEventListener('input', () => {
+            if(contractName.value.trim().length > 0) {
+                btnAccept.disabled = false;
+                btnAccept.classList.remove('opacity-50', 'pointer-events-none');
+            } else {
+                btnAccept.disabled = true;
+                btnAccept.classList.add('opacity-50', 'pointer-events-none');
+            }
+        });
+
+        function acceptContract() {
+            startTrees();
+        }
+
+        // --- PHASE 7: TREES ---
+        function startTrees() {
+            showScreen('screen-trees');
+            const container = document.getElementById('forest-container');
+            container.innerHTML = '';
+            
+            const colors = ['pink', 'orange', 'yellow'];
+            
+            // Render 6 trees, randomly inserting the disguise one
+            let specialIndex = Math.floor(Math.random() * 6);
+            
+            for(let i=0; i<6; i++) {
+                let wrapper = document.createElement('div');
+                wrapper.className = "tree-wrapper";
+                
+                let color = colors[Math.floor(Math.random() * colors.length)];
+                
+                if (i === specialIndex) {
+                    wrapper.onclick = () => chopSpecialTree(wrapper);
+                    wrapper.innerHTML = `
+                        <div class="tree-front flex flex-col items-center">
+                            <div class="truffula-tuft ${color}"></div>
+                            <div class="truffula-trunk"></div>
+                        </div>
+                        <img src="Screenshot_20260201_204446_Instagram.jpg" alt="You" class="girl-tree hidden absolute bottom-0 left-2 w-20 h-20 rounded-full border-4 border-pink-400 shadow-lg z-10 object-cover" onerror="this.outerHTML='<span class=\\'girl-tree hidden absolute bottom-0 left-0 text-7xl z-10 whitespace-nowrap\\'>🏃‍♀️</span>'">
+                    `;
+                } else {
+                    wrapper.onclick = () => chopTree(wrapper);
+                    wrapper.innerHTML = `
+                        <div class="truffula-tuft ${color}"></div>
+                        <div class="truffula-trunk"></div>
+                    `;
+                }
+                container.appendChild(wrapper);
+            }
+        }
+
+        function chopTree(el) {
+            el.style.opacity = '0';
+            el.style.transform = 'scale(0) rotate(45deg)';
+            el.style.pointerEvents = 'none';
+            document.getElementById('tree-msg').innerText = "Keep chopping! 🪓";
+        }
+
+        function chopSpecialTree(el) {
+            el.querySelector('.tree-front').classList.add('hidden');
+            const girl = el.querySelector('.girl-tree');
+            girl.classList.remove('hidden');
+            
+            document.getElementById('tree-msg').innerText = "There you are! 👀💖";
+            document.querySelectorAll('.tree-wrapper').forEach(t => t.style.pointerEvents = 'none');
+
+            setTimeout(() => {
+                girl.classList.add('tree-anim-run');
+                setTimeout(() => {
+                    startPizzazz();
+                }, 1500);
+            }, 800);
+        }
+
+        // --- PHASE 8: PIZZAZZ SHAKER ---
+        let pizzazzCount = 0;
+        let lastMouseX = -1;
+        
+        function startPizzazz() {
+            showScreen('screen-pizzazz');
+            const shaker = document.getElementById('shaker-icon');
+            shaker.style.display = 'block';
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if (activeScreenId === 'screen-pizzazz') {
+                const shaker = document.getElementById('shaker-icon');
+                // Make shaker follow mouse
+                shaker.style.left = (e.clientX + 10) + 'px';
+                shaker.style.top = (e.clientY + 10) + 'px';
+
+                // Detect shake
+                if(lastMouseX !== -1) {
+                    let delta = Math.abs(e.clientX - lastMouseX);
+                    if (delta > 30) {
+                        pizzazzCount++;
+                        updatePizzazz(e.clientX, e.clientY);
+                    }
+                }
+                lastMouseX = e.clientX;
+            }
+        });
+
+        // Add touch support for Pizzazz shaker on mobile
+        document.addEventListener('touchmove', (e) => {
+            if (activeScreenId === 'screen-pizzazz' && e.touches.length > 0) {
+                const touch = e.touches[0];
+                const shaker = document.getElementById('shaker-icon');
+                shaker.style.left = (touch.clientX + 10) + 'px';
+                shaker.style.top = (touch.clientY + 10) + 'px';
+
+                if(lastMouseX !== -1) {
+                    let delta = Math.abs(touch.clientX - lastMouseX);
+                    if (delta > 15) { // more sensitive for mobile
+                        pizzazzCount++;
+                        updatePizzazz(touch.clientX, touch.clientY);
+                    }
+                }
+                lastMouseX = touch.clientX;
+            }
+        });
+
+        function updatePizzazz(x, y) {
+            if (pizzazzCount > 100) return; // done
+            
+            const bar = document.getElementById('pizzazz-bar');
+            const girl = document.getElementById('pizzazz-girl');
+            const msg = document.getElementById('pizzazz-msg');
+            
+            bar.style.width = pizzazzCount + '%';
+            
+            // Spawn particle occasionally
+            if (pizzazzCount % 3 === 0) {
+                spawnParticle(x, y);
+            }
+
+            if (pizzazzCount === 50) {
+                girl.innerText = "👗";
+                girl.style.transform = "scale(1.2)";
+                msg.innerText = "Keep going! ✨";
+            } else if (pizzazzCount === 100) {
+                girl.innerText = "✨👸✨";
+                girl.style.transform = "scale(1.5)";
+                msg.innerText = "Maximum Pizzazz achieved. You're ready. 💅✨";
+                
+                // Done
+                document.getElementById('shaker-icon').style.display = 'none';
+                setTimeout(() => {
+                    showScreen('screen-success');
+                }, 2500);
+            }
+        }
+
+        function spawnParticle(x, y) {
+            const p = document.createElement('div');
+            p.innerText = "✨";
+            p.className = "particle";
+            // Random scatter near mouse
+            p.style.left = (x + (Math.random() * 60 - 30)) + 'px';
+            p.style.top = (y + (Math.random() * 60 - 30)) + 'px';
+            document.body.appendChild(p);
+            
+            setTimeout(() => p.remove(), 1000);
+        }
+
+    </script>
+</body>
+</html>
